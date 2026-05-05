@@ -21,6 +21,14 @@ Namespace BarangaySystem.BusinessLogic
             Return _repo.GetAll("Upcoming").Count
         End Function
 
+        ''' <summary>
+        ''' Returns activities scheduled for tomorrow that are still Upcoming.
+        ''' Used to drive the 1-day-ahead popup alert.
+        ''' </summary>
+        Public Function GetTomorrowAlerts() As List(Of ActivityModel)
+            Return _repo.GetTomorrowUpcoming()
+        End Function
+
         Public Function Save(model As ActivityModel, isNew As Boolean) As (Success As Boolean, Message As String)
             If String.IsNullOrWhiteSpace(model.ActivityName) Then Return (False, "Activity name is required.")
             If String.IsNullOrWhiteSpace(model.Venue)        Then Return (False, "Venue is required.")

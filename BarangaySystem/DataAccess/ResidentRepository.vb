@@ -8,7 +8,8 @@ Namespace BarangaySystem.DataAccess
         Private Const SelectCols As String =
             "resident_id, res_code, last_name, first_name, middle_name, birth_date,
              gender, civil_status, address, purok, contact_no, email, occupation,
-             is_voter, is_solo_parent, is_active, created_by, created_at, updated_at"
+             is_voter, is_solo_parent, birth_certificate, is_active,
+             created_by, created_at, updated_at"
 
         ' ── Read ─────────────────────────────────────────────────────────
 
@@ -97,9 +98,9 @@ Namespace BarangaySystem.DataAccess
             Const sql = "INSERT INTO residents
                 (res_code, last_name, first_name, middle_name, birth_date, gender,
                  civil_status, address, purok, contact_no, email, occupation,
-                 is_voter, is_solo_parent, is_active, created_by)
+                 is_voter, is_solo_parent, birth_certificate, is_active, created_by)
                 VALUES
-                (@rc,@ln,@fn,@mn,@bd,@ge,@cs,@ad,@pu,@cn,@em,@oc,@iv,@isp,@ia,@cb)"
+                (@rc,@ln,@fn,@mn,@bd,@ge,@cs,@ad,@pu,@cn,@em,@oc,@iv,@isp,@bc,@ia,@cb)"
             Using conn = DatabaseConfig.GetConnection()
             Using cmd  = New MySqlCommand(sql, conn)
                 BindParams(cmd, model)
@@ -113,7 +114,7 @@ Namespace BarangaySystem.DataAccess
                 last_name=@ln, first_name=@fn, middle_name=@mn, birth_date=@bd,
                 gender=@ge, civil_status=@cs, address=@ad, purok=@pu,
                 contact_no=@cn, email=@em, occupation=@oc,
-                is_voter=@iv, is_solo_parent=@isp, is_active=@ia
+                is_voter=@iv, is_solo_parent=@isp, birth_certificate=@bc, is_active=@ia
                 WHERE resident_id=@id"
             Using conn = DatabaseConfig.GetConnection()
             Using cmd  = New MySqlCommand(sql, conn)
@@ -163,31 +164,35 @@ Namespace BarangaySystem.DataAccess
             cmd.Parameters.AddWithValue("@oc", If(String.IsNullOrWhiteSpace(m.Occupation), DBNull.Value, m.Occupation))
             cmd.Parameters.AddWithValue("@iv",  m.IsVoter)
             cmd.Parameters.AddWithValue("@isp", m.IsSoloParent)
+            cmd.Parameters.AddWithValue("@bc",  If(m.BirthCertificate Is Nothing, DBNull.Value, CObj(m.BirthCertificate)))
             cmd.Parameters.AddWithValue("@ia",  m.IsActive)
             cmd.Parameters.AddWithValue("@cb", m.CreatedBy)
         End Sub
 
         Private Function MapResident(rdr As MySqlDataReader) As ResidentModel
+            Dim bcOrd = rdr.GetOrdinal("birth_certificate")
             Return New ResidentModel With {
-                .ResidentId  = rdr.GetInt32("resident_id"),
-                .ResCode     = rdr.GetString("res_code"),
-                .LastName    = rdr.GetString("last_name"),
-                .FirstName   = rdr.GetString("first_name"),
-                .MiddleName  = If(rdr.IsDBNull(rdr.GetOrdinal("middle_name")), "", rdr.GetString("middle_name")),
-                .BirthDate   = rdr.GetDateTime("birth_date"),
-                .Gender      = rdr.GetString("gender"),
-                .CivilStatus = rdr.GetString("civil_status"),
-                .Address     = rdr.GetString("address"),
-                .Purok       = rdr.GetString("purok"),
-                .ContactNo   = If(rdr.IsDBNull(rdr.GetOrdinal("contact_no")), "", rdr.GetString("contact_no")),
-                .Email       = If(rdr.IsDBNull(rdr.GetOrdinal("email")), "", rdr.GetString("email")),
-                .Occupation  = If(rdr.IsDBNull(rdr.GetOrdinal("occupation")), "", rdr.GetString("occupation")),
-                .IsVoter      = rdr.GetBoolean("is_voter"),
-                .IsSoloParent = rdr.GetBoolean("is_solo_parent"),
-                .IsActive     = rdr.GetBoolean("is_active"),
-                .CreatedBy   = If(rdr.IsDBNull(rdr.GetOrdinal("created_by")), 0, rdr.GetInt32("created_by")),
-                .CreatedAt   = rdr.GetDateTime("created_at"),
-                .UpdatedAt   = rdr.GetDateTime("updated_at")
+                .ResidentId       = rdr.GetInt32("resident_id"),
+                .ResCode          = rdr.GetString("res_code"),
+                .LastName         = rdr.GetString("last_name"),
+                .FirstName        = rdr.GetString("first_name"),
+                .MiddleName       = If(rdr.IsDBNull(rdr.GetOrdinal("middle_name")), "", rdr.GetString("middle_name")),
+                .BirthDate        = rdr.GetDateTime("birth_date"),
+                .Gender           = rdr.GetString("gender"),
+                .CivilStatus      = rdr.GetString("civil_status"),
+                .Address          = rdr.GetString("address"),
+                .Purok            = rdr.GetString("purok"),
+                .ContactNo        = If(rdr.IsDBNull(rdr.GetOrdinal("contact_no")), "", rdr.GetString("contact_no")),
+                .Email            = If(rdr.IsDBNull(rdr.GetOrdinal("email")), "", rdr.GetString("email")),
+                .Occupation       = If(rdr.IsDBNull(rdr.GetOrdinal("occupation")), "", rdr.GetString("occupation")),
+                .IsVoter          = rdr.GetBoolean("is_voter"),
+                .IsSoloParent     = rdr.GetBoolean("is_solo_parent"),
+                .BirthCertificate = If(rdr.IsDBNull(bcOrd), Nothing,
+                                       CType(rdr.GetValue(bcOrd), Byte())),
+                .IsActive         = rdr.GetBoolean("is_active"),
+                .CreatedBy        = If(rdr.IsDBNull(rdr.GetOrdinal("created_by")), 0, rdr.GetInt32("created_by")),
+                .CreatedAt        = rdr.GetDateTime("created_at"),
+                .UpdatedAt        = rdr.GetDateTime("updated_at")
             }
         End Function
 

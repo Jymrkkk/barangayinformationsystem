@@ -48,11 +48,35 @@ Namespace BarangaySystem.Helpers
         Public ReadOnly FontTitle   As New Font("Segoe UI", 14, FontStyle.Bold)
         Public ReadOnly FontHeader  As New Font("Segoe UI", 11, FontStyle.Bold)
 
-        ' ── Logo loader ──────────────────────────────────────────────────
-        Private _logoCache As Image = Nothing
+        ' ── Logo loaders ─────────────────────────────────────────────────
+        ' logo.png  = Barangay System logo  (main branding)
+        ' logo.jpg  = University/school logo (shown as footer credit)
 
+        Private _systemLogoCache     As Image = Nothing
+        Private _universityLogoCache As Image = Nothing
+
+        ''' <summary>Returns the Barangay System logo (logo.png).</summary>
         Public Function GetLogo() As Image
-            If _logoCache IsNot Nothing Then Return _logoCache
+            If _systemLogoCache IsNot Nothing Then Return _systemLogoCache
+            Try
+                Dim asm  = Assembly.GetExecutingAssembly()
+                Dim name = asm.GetManifestResourceNames().
+                               FirstOrDefault(Function(n) n.EndsWith("logo.png",
+                                              StringComparison.OrdinalIgnoreCase))
+                If name IsNot Nothing Then
+                    Using stream = asm.GetManifestResourceStream(name)
+                        _systemLogoCache = Image.FromStream(stream)
+                    End Using
+                End If
+            Catch
+                ' Logo not found — silently ignore
+            End Try
+            Return _systemLogoCache
+        End Function
+
+        ''' <summary>Returns the University/school logo (logo.jpg) used in the footer.</summary>
+        Public Function GetUniversityLogo() As Image
+            If _universityLogoCache IsNot Nothing Then Return _universityLogoCache
             Try
                 Dim asm  = Assembly.GetExecutingAssembly()
                 Dim name = asm.GetManifestResourceNames().
@@ -60,13 +84,13 @@ Namespace BarangaySystem.Helpers
                                               StringComparison.OrdinalIgnoreCase))
                 If name IsNot Nothing Then
                     Using stream = asm.GetManifestResourceStream(name)
-                        _logoCache = Image.FromStream(stream)
+                        _universityLogoCache = Image.FromStream(stream)
                     End Using
                 End If
             Catch
-                ' Logo not found — silently ignore
+                ' University logo not found — silently ignore
             End Try
-            Return _logoCache
+            Return _universityLogoCache
         End Function
 
         ' ── DataGridView Styling ─────────────────────────────────────────

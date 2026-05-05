@@ -74,11 +74,13 @@ Namespace BarangaySystem.Forms.Modules
                 AddHandler _main.btnAdd.Click,    AddressOf BtnAdd_Click
                 AddHandler _main.btnUpdate.Click, AddressOf BtnUpdate_Click
                 AddHandler _main.btnDelete.Click, AddressOf BtnDelete_Click
+                AddHandler _main.btnPrint.Click,  AddressOf BtnPrint_Click
                 AddHandler _main.btnExport.Click, AddressOf BtnExport_Click
             Else
                 RemoveHandler _main.btnAdd.Click,    AddressOf BtnAdd_Click
                 RemoveHandler _main.btnUpdate.Click, AddressOf BtnUpdate_Click
                 RemoveHandler _main.btnDelete.Click, AddressOf BtnDelete_Click
+                RemoveHandler _main.btnPrint.Click,  AddressOf BtnPrint_Click
                 RemoveHandler _main.btnExport.Click, AddressOf BtnExport_Click
             End If
         End Sub
@@ -193,6 +195,15 @@ Namespace BarangaySystem.Forms.Modules
                                     If(result.Success, MessageBoxIcon.Information, MessageBoxIcon.Error))
                     If result.Success Then LoadData()
                 End If
+            End If
+        End Sub
+
+        Private Sub BtnPrint_Click(sender As Object, e As EventArgs)
+            If Not Me.Visible Then Return
+            If _tabs.SelectedIndex = 0 Then
+                PrintHelper.PrintGrid(_dgvOrdinances, "Barangay Ordinances Report")
+            Else
+                PrintHelper.PrintGrid(_dgvResolutions, "Barangay Resolutions Report")
             End If
         End Sub
 

@@ -154,6 +154,36 @@ Namespace BarangaySystem.DataAccess
             End Using
         End Function
 
+        ''' <summary>
+        ''' Inserts a batch of students in a single transaction.
+        ''' Returns the number of rows successfully inserted.
+        ''' </summary>
+        Public Function BulkInsert(students As List(Of StudentModel)) As Integer
+            Dim inserted = 0
+            Using conn = DatabaseConfig.GetConnection()
+            Using tx   = conn.BeginTransaction()
+                Try
+                    For Each m In students
+                        Const sql = "INSERT INTO students
+                            (stud_code, resident_id, last_name, first_name, middle_name,
+                             birth_date, gender, address, purok, school_id,
+                             grade_year, school_year, is_scholar, status, created_by)
+                            VALUES (@sc,@ri,@ln,@fn,@mn,@bd,@ge,@ad,@pu,@si,@gy,@sy,@is,@st,@cb)"
+                        Using cmd = New MySqlCommand(sql, conn, tx)
+                            BindParams(cmd, m)
+                            If cmd.ExecuteNonQuery() > 0 Then inserted += 1
+                        End Using
+                    Next
+                    tx.Commit()
+                Catch
+                    tx.Rollback()
+                    Throw
+                End Try
+            End Using
+            End Using
+            Return inserted
+        End Function
+
         Private Sub BindParams(cmd As MySqlCommand, m As StudentModel)
             cmd.Parameters.AddWithValue("@sc", m.StudCode)
             cmd.Parameters.AddWithValue("@ri", If(m.ResidentId.HasValue, m.ResidentId.Value, DBNull.Value))
