@@ -14,9 +14,10 @@ Namespace BarangaySystem.Models
         Public Property ContactNo   As String = String.Empty
         Public Property Email       As String = String.Empty
         Public Property Occupation  As String = String.Empty
-        Public Property IsVoter     As Boolean
-        Public Property IsSoloParent As Boolean
-        Public Property IsActive    As Boolean = True
+        Public Property IsVoter          As Boolean
+        Public Property IsSoloParent     As Boolean
+        Public Property BirthCertificate As Byte() = Nothing   ' LONGBLOB — nullable
+        Public Property IsActive         As Boolean = True
         Public Property CreatedBy   As Integer
         Public Property CreatedAt   As DateTime
         Public Property UpdatedAt   As DateTime
@@ -34,6 +35,13 @@ Namespace BarangaySystem.Models
                 Dim a = today.Year - BirthDate.Year
                 If BirthDate.Date > today.AddYears(-a) Then a -= 1
                 Return a
+            End Get
+        End Property
+
+        ''' <summary>True when the resident is 60 years old or older.</summary>
+        Public ReadOnly Property IsSeniorCitizen As Boolean
+            Get
+                Return Age >= 60
             End Get
         End Property
     End Class

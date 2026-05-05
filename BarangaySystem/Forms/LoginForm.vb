@@ -44,11 +44,11 @@ Namespace BarangaySystem.Forms
                 .BackColor = UIHelper.NavBg
             }
 
-            ' Logo picture box
+            ' ── System logo (new — Barangay System logo) ─────────────────
             Dim picLogo As New PictureBox With {
-                .Size     = New Size(90, 90),
-                .Location = New Point(145, 80),
-                .SizeMode = PictureBoxSizeMode.Zoom,
+                .Size      = New Size(110, 110),
+                .Location  = New Point(135, 60),
+                .SizeMode  = PictureBoxSizeMode.Zoom,
                 .BackColor = Color.Transparent
             }
             Dim logo = UIHelper.GetLogo()
@@ -75,15 +75,34 @@ Namespace BarangaySystem.Forms
                 .Location  = New Point(20, 305),
                 .TextAlign = ContentAlignment.MiddleCenter
             }
-            Dim lblVer As New Label With {
-                .Text      = "v1.0  |  © 2025 Barangay System",
-                .Font      = New Font("Segoe UI", 8),
+
+            ' ── Footer: university logo + credit text ─────────────────────
+            Dim pnlFooter As New Panel With {
+                .Size      = New Size(340, 52),
+                .Location  = New Point(20, 430),
+                .BackColor = Color.Transparent
+            }
+
+            Dim picUniLogo As New PictureBox With {
+                .Size      = New Size(36, 36),
+                .Location  = New Point(8, 8),
+                .SizeMode  = PictureBoxSizeMode.Zoom,
+                .BackColor = Color.Transparent
+            }
+            Dim uniLogo = UIHelper.GetUniversityLogo()
+            If uniLogo IsNot Nothing Then picUniLogo.Image = uniLogo
+
+            Dim lblUniCredit As New Label With {
+                .Text      = "Developed Final Project" & Environment.NewLine &
+                             "v1.0  |  © 2026 Barangay System",
+                .Font      = New Font("Segoe UI", 7.5F),
                 .ForeColor = ColorTranslator.FromHtml("#CC8888"),
                 .AutoSize  = False,
-                .Size      = New Size(340, 20),
-                .Location  = New Point(20, 460),
-                .TextAlign = ContentAlignment.MiddleCenter
+                .Size      = New Size(284, 36),
+                .Location  = New Point(50, 8),
+                .TextAlign = ContentAlignment.MiddleLeft
             }
+            pnlFooter.Controls.AddRange({picUniLogo, lblUniCredit})
 
             ' Decorative bottom accent line
             AddHandler pnlLeft.Paint, Sub(s, e)
@@ -92,7 +111,7 @@ Namespace BarangaySystem.Forms
                 End Using
             End Sub
 
-            pnlLeft.Controls.AddRange({picLogo, lblSystem, lblSub, lblVer})
+            pnlLeft.Controls.AddRange({picLogo, lblSystem, lblSub, pnlFooter})
 
             ' ── Right login panel ────────────────────────────────────────
             Dim pnlRight As New Panel With {

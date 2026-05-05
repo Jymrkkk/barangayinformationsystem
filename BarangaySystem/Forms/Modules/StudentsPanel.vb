@@ -31,6 +31,41 @@ Namespace BarangaySystem.Forms.Modules
 
             ' Tab 1 — Student List
             Dim tabList As New TabPage("  Student List  ")
+
+            ' Import toolbar strip at top of student list tab
+            Dim pnlImportBar As New Panel With {
+                .Dock      = DockStyle.Top,
+                .Height    = 34,
+                .BackColor = UIHelper.Surface,
+                .Padding   = New Padding(4, 4, 4, 0)
+            }
+            Dim btnImport As New Button With {
+                .Text      = "📥 Import Excel",
+                .Font      = New Font("Segoe UI", 8.5F),
+                .BackColor = UIHelper.BtnPurple,
+                .ForeColor = Color.White,
+                .FlatStyle = FlatStyle.Flat,
+                .Size      = New Size(120, 26),
+                .Location  = New Point(4, 4),
+                .Cursor    = Cursors.Hand
+            }
+            btnImport.FlatAppearance.BorderSize = 0
+            AddHandler btnImport.Click, AddressOf BtnImport_Click
+
+            Dim btnTemplate As New Button With {
+                .Text      = "📄 Download Template",
+                .Font      = New Font("Segoe UI", 8.5F),
+                .BackColor = UIHelper.BtnSearch,
+                .ForeColor = Color.White,
+                .FlatStyle = FlatStyle.Flat,
+                .Size      = New Size(140, 26),
+                .Location  = New Point(132, 4),
+                .Cursor    = Cursors.Hand
+            }
+            btnTemplate.FlatAppearance.BorderSize = 0
+            AddHandler btnTemplate.Click, AddressOf BtnDownloadTemplate_Click
+
+            pnlImportBar.Controls.AddRange({btnImport, btnTemplate})
             _dgvStudents = New DataGridView()
             UIHelper.StyleDataGridView(_dgvStudents)
             _dgvStudents.Dock = DockStyle.Fill
@@ -48,6 +83,7 @@ Namespace BarangaySystem.Forms.Modules
                 If e.RowIndex < 0 Then Return
                 EditStudent(CInt(_dgvStudents.Rows(e.RowIndex).Tag))
             End Sub
+            tabList.Controls.Add(pnlImportBar)
             tabList.Controls.Add(_dgvStudents)
 
             ' Tab 2 — By School
@@ -112,11 +148,13 @@ Namespace BarangaySystem.Forms.Modules
                 AddHandler _main.btnAdd.Click,    AddressOf BtnAdd_Click
                 AddHandler _main.btnUpdate.Click, AddressOf BtnUpdate_Click
                 AddHandler _main.btnDelete.Click, AddressOf BtnDelete_Click
+                AddHandler _main.btnPrint.Click,  AddressOf BtnPrint_Click
                 AddHandler _main.btnExport.Click, AddressOf BtnExport_Click
             Else
                 RemoveHandler _main.btnAdd.Click,    AddressOf BtnAdd_Click
                 RemoveHandler _main.btnUpdate.Click, AddressOf BtnUpdate_Click
                 RemoveHandler _main.btnDelete.Click, AddressOf BtnDelete_Click
+                RemoveHandler _main.btnPrint.Click,  AddressOf BtnPrint_Click
                 RemoveHandler _main.btnExport.Click, AddressOf BtnExport_Click
             End If
         End Sub
@@ -201,6 +239,15 @@ Namespace BarangaySystem.Forms.Modules
             End Using
         End Sub
 
+        Private Sub BtnPrint_Click(sender As Object, e As EventArgs)
+            If Not Me.Visible Then Return
+            Select Case _tabs.SelectedIndex
+                Case 0 : PrintHelper.PrintGrid(_dgvStudents,     "Student Records Report")
+                Case 2 : PrintHelper.PrintGrid(_dgvScholarships, "Scholarships Report")
+                Case Else : PrintHelper.PrintGrid(_dgvStudents,  "Student Records Report")
+            End Select
+        End Sub
+
         Private Sub BtnDelete_Click(sender As Object, e As EventArgs)
             If Not Me.Visible Then Return
             If _dgvStudents.CurrentRow Is Nothing Then Return
@@ -214,6 +261,75 @@ Namespace BarangaySystem.Forms.Modules
                                 If(result.Success, MessageBoxIcon.Information, MessageBoxIcon.Error))
                 If result.Success Then LoadData()
             End If
+        End Sub
+
+        Private Sub BtnImport_Click(sender As Object, e As EventArgs)
+            If Not Me.Visible Then Return
+            Using ofd As New OpenFileDialog With {
+                .Title  = "Select Student Excel File",
+                .Filter = "Excel Workbook (*.xlsx)|*.xlsx"
+            }
+                If ofd.ShowDialog() <> DialogResult.OK Then Return
+                Dim svc    As New ReportService()
+                Dim result = svc.ImportStudentsFromExcel(ofd.FileName)
+                MessageBox.Show(result.Message,
+                                If(result.Success, "Import Complete", "Import Failed"),
+                                MessageBoxButtons.OK,
+                                If(result.Success, MessageBoxIcon.Information, MessageBoxIcon.Warning))
+                If result.Success Then LoadData()
+            End Using
+        End Sub
+
+        Private Sub BtnDownloadTemplate_Click(sender As Object, e As EventArgs)
+            If Not Me.Visible Then Return
+            Using sfd As New SaveFileDialog With {
+                .Title    = "Save Import Template",
+                .Filter   = "Excel Workbook (*.xlsx)|*.xlsx",
+                .FileName = "Students_Import_Template.xlsx"
+            }
+                If sfd.ShowDialog() <> DialogResult.OK Then Return
+                Try
+                    OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial
+                    Using pkg As New OfficeOpenXml.ExcelPackage()
+                        Dim ws = pkg.Workbook.Worksheets.Add("Students")
+                        Dim headers = {"Last Name *", "First Name *", "Middle Name",
+                                       "Birth Date (MM/dd/yyyy)", "Gender (Male/Female/Other)",
+                                       "Address *", "Purok *", "School Name",
+                                       "Grade/Year *", "School Year * (e.g. 2024-2025)",
+                                       "Scholar (Yes/No)", "Status (Enrolled/Dropped/Graduated)"}
+                        For i = 0 To headers.Length - 1
+                            ws.Cells(1, i + 1).Value = headers(i)
+                            With ws.Cells(1, i + 1).Style
+                                .Font.Bold = True
+                                .Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                                .Fill.BackgroundColor.SetColor(System.Drawing.ColorTranslator.FromHtml("#7B1A1A"))
+                                .Font.Color.SetColor(System.Drawing.Color.White)
+                            End With
+                        Next
+                        ' Sample row
+                        ws.Cells(2, 1).Value  = "Dela Cruz"
+                        ws.Cells(2, 2).Value  = "Juan"
+                        ws.Cells(2, 3).Value  = "Santos"
+                        ws.Cells(2, 4).Value  = "01/15/2009"
+                        ws.Cells(2, 5).Value  = "Male"
+                        ws.Cells(2, 6).Value  = "123 Mabini St."
+                        ws.Cells(2, 7).Value  = "Purok 1"
+                        ws.Cells(2, 8).Value  = "Brgy. National High School"
+                        ws.Cells(2, 9).Value  = "Grade 11"
+                        ws.Cells(2, 10).Value = "2024-2025"
+                        ws.Cells(2, 11).Value = "No"
+                        ws.Cells(2, 12).Value = "Enrolled"
+                        ws.Cells(ws.Dimension.Address).AutoFitColumns()
+                        pkg.SaveAs(New System.IO.FileInfo(sfd.FileName))
+                    End Using
+                    ' Open the template
+                    Dim psi As New System.Diagnostics.ProcessStartInfo(sfd.FileName) With {.UseShellExecute = True}
+                    System.Diagnostics.Process.Start(psi)
+                Catch ex As Exception
+                    MessageBox.Show($"Could not create template: {ex.Message}", "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End Try
+            End Using
         End Sub
 
         Private Sub BtnExport_Click(sender As Object, e As EventArgs)

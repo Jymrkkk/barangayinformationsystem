@@ -102,6 +102,31 @@ Namespace BarangaySystem.DataAccess
             End Using
         End Function
 
+        ''' <summary>
+        ''' Returns all Upcoming activities whose activity_date is exactly tomorrow.
+        ''' Used for the 1-day-ahead event alert notification.
+        ''' </summary>
+        Public Function GetTomorrowUpcoming() As List(Of ActivityModel)
+            Dim list As New List(Of ActivityModel)
+            Const sql = "SELECT activity_id, act_code, activity_name, description,
+                                activity_date, venue, organizer, participants, status,
+                                created_by, created_at, updated_at
+                         FROM activities
+                         WHERE status = 'Upcoming'
+                           AND activity_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+                         ORDER BY activity_date"
+            Using conn = DatabaseConfig.GetConnection()
+            Using cmd  = New MySqlCommand(sql, conn)
+            Using rdr  = cmd.ExecuteReader()
+                While rdr.Read()
+                    list.Add(MapActivity(rdr))
+                End While
+            End Using
+            End Using
+            End Using
+            Return list
+        End Function
+
         Private Sub BindParams(cmd As MySqlCommand, m As ActivityModel)
             cmd.Parameters.AddWithValue("@ac", m.ActCode)
             cmd.Parameters.AddWithValue("@an", m.ActivityName)

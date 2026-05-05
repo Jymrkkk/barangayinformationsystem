@@ -53,6 +53,10 @@ Namespace BarangaySystem.Forms
         ' ── Clock timer ──────────────────────────────────────────────────
         Private _clockTimer   As New Timer With {.Interval = 1000}
 
+        ' ── Event alert timer ────────────────────────────────────────────
+        ' Fires 3 s after login, then every hour, to check for tomorrow's events.
+        Private _alertTimer   As New Timer With {.Interval = 3000}
+
         Public Sub New()
             InitializeComponent()
             LoadPanels()
@@ -60,6 +64,7 @@ Namespace BarangaySystem.Forms
             ApplyRolePermissions()
             ShowModule("home")
             _clockTimer.Start()
+            _alertTimer.Start()   ' first check fires 3 s after the form loads
         End Sub
 
         ' ── Form init ────────────────────────────────────────────────────
@@ -212,6 +217,14 @@ Namespace BarangaySystem.Forms
                         DirectCast(panel, ISearchable).FilterData(txtSearch.Text)
                     End If
                 End If
+            End Sub
+
+            ' Alert timer: first tick = 3 s after login; subsequent = every hour
+            AddHandler _alertTimer.Tick, Sub(s, e)
+                _alertTimer.Stop()
+                _alertTimer.Interval = 60 * 60 * 1000   ' switch to 1-hour interval
+                CheckAndShowEventAlerts()
+                _alertTimer.Start()
             End Sub
 
             AddHandler Me.FormClosing, Sub(s, e) AuthService.Logout()
@@ -472,6 +485,26 @@ Namespace BarangaySystem.Forms
                 .Height    = 16
             }
         End Function
+
+        ' ── Event alert check ────────────────────────────────────────────
+        ''' <summary>
+        ''' Queries for Upcoming activities scheduled for tomorrow.
+        ''' If any are found, shows the EventAlertForm popup.
+        ''' Safe to call on the UI thread (timer tick runs on UI thread).
+        ''' </summary>
+        Private Sub CheckAndShowEventAlerts()
+            Try
+                Dim svc      As New ActivityService()
+                Dim tomorrow = svc.GetTomorrowAlerts()
+                If tomorrow.Count = 0 Then Return
+
+                Dim alert As New EventAlertForm(tomorrow,
+                    Sub() ShowModule("activities"))
+                alert.Show(Me)   ' non-modal so the main form stays usable
+            Catch
+                ' Silently ignore DB errors during alert check
+            End Try
+        End Sub
 
     End Class
 
