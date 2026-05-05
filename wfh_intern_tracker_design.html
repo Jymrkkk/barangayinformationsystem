@@ -1,0 +1,458 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.screen { display: none; width: 100%; }
+.screen.active { display: block; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.topbar-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+.av-admin { background: var(--color-background-info); color: var(--color-text-info); }
+.av-intern { background: var(--color-background-success); color: var(--color-text-success); }
+.badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+.badge-admin { background: var(--color-background-info); color: var(--color-text-info); }
+.badge-intern { background: var(--color-background-success); color: var(--color-text-success); }
+.btn-sm { font-size: 12px; padding: 5px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.btn-sm:hover { background: var(--color-background-secondary); }
+.btn-primary { font-size: 13px; padding: 8px 16px; border-radius: var(--border-radius-md); border: none; background: var(--color-text-primary); color: var(--color-background-primary); cursor: pointer; font-weight: 500; }
+.btn-primary:hover { opacity: 0.85; }
+
+.page-body { padding: 24px; }
+
+.section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-secondary); margin-bottom: 12px; }
+
+.metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.metric-value span { font-size: 13px; font-weight: 400; color: var(--color-text-secondary); margin-left: 4px; }
+
+.interns-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.intern-card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.intern-card:hover { border-color: var(--color-border-secondary); }
+.intern-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.intern-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+.ia-blue { background: var(--color-background-info); color: var(--color-text-info); }
+.ia-teal { background: #E1F5EE; color: #0F6E56; }
+.ia-purple { background: #EEEDFE; color: #534AB7; }
+.ia-coral { background: #FAECE7; color: #993C1D; }
+.ia-amber { background: #FAEEDA; color: #854F0B; }
+.ia-pink { background: #FBEAF0; color: #993556; }
+.intern-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.intern-role { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-online { background: #4CAF50; }
+.status-idle { background: #FFC107; }
+.status-offline { background: #9E9E9E; }
+.status-label { font-size: 11px; font-weight: 500; }
+.sl-online { color: #388E3C; }
+.sl-idle { color: #F57C00; }
+.sl-offline { color: var(--color-text-secondary); }
+.status-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.task-mini { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--color-text-secondary); border-top: 0.5px solid var(--color-border-tertiary); padding-top: 10px; }
+.task-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.pill-pending { background: #FFF9E6; color: #854F0B; }
+.pill-inprog { background: var(--color-background-info); color: var(--color-text-info); }
+.pill-done { background: var(--color-background-success); color: var(--color-text-success); }
+
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.activity-list { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.activity-item { padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.activity-item:last-child { border-bottom: none; }
+.activity-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.activity-text { font-size: 13px; color: var(--color-text-primary); }
+.activity-time { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: none; align-items: flex-start; justify-content: center; z-index: 100; padding-top: 20px; min-height: 600px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); width: 520px; max-height: 90vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 500; }
+.close-btn { width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: var(--color-text-secondary); font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.close-btn:hover { background: var(--color-background-secondary); }
+.modal-body { padding: 20px; }
+.task-row { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 14px; margin-bottom: 10px; }
+.task-row-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+.task-row-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; }
+.task-row-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 10px; }
+.task-actions { display: flex; gap: 8px; align-items: center; }
+.btn-demand { font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.btn-demand:hover { background: var(--color-background-secondary); }
+.checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; }
+input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-text-primary); }
+
+.intern-tasks { display: flex; flex-direction: column; gap: 14px; }
+.task-card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 16px;
+}
+.task-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.task-card-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.task-card-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px; }
+.task-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 0.5px solid var(--color-border-tertiary); }
+.update-form { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; margin-top: 12px; }
+.update-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+textarea { width: 100%; font-size: 13px; padding: 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); resize: none; font-family: var(--font-sans); }
+.upload-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.upload-btn { font-size: 12px; padding: 5px 10px; border: 0.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.upload-btn:hover { background: var(--color-background-secondary); }
+.alert-banner { background: #FFF9E6; border: 0.5px solid #FBCB49; border-radius: var(--border-radius-md); padding: 10px 14px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+.alert-icon { font-size: 14px; }
+.alert-text { font-size: 13px; color: #854F0B; }
+.notif-badge { width: 16px; height: 16px; border-radius: 50%; background: #E24B4A; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: #fff; }
+
+.tab-row { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 20px; }
+.tab { font-size: 13px; padding: 8px 16px; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+.tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
+
+.switch-row { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; }
+.switch-btn { font-size: 12px; padding: 6px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.switch-btn.active { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+
+.legend-row { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--color-text-secondary); }
+
+.demand-toast { position: absolute; bottom: 20px; right: 20px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); display: none; z-index: 200; max-width: 260px; }
+.demand-toast.show { display: block; }
+.toast-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--color-text-primary); }
+.toast-body { font-size: 12px; color: var(--color-text-secondary); }
+</style>
+
+<div style="position:relative; min-height:600px; background: var(--color-background-tertiary);">
+
+<div class="switch-row" style="padding-top:16px;">
+  <button class="switch-btn active" onclick="showScreen('admin')">Admin view</button>
+  <button class="switch-btn" onclick="showScreen('intern')">Intern view</button>
+</div>
+
+<!-- ADMIN SCREEN -->
+<div id="screen-admin" class="screen active">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">WFH Tracker</div>
+      <div class="topbar-sub">Admin dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge badge-admin">Admin</span>
+      <div class="avatar av-admin">BK</div>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="metrics-row">
+      <div class="metric-card"><div class="metric-label">Total interns</div><div class="metric-value">6</div></div>
+      <div class="metric-card"><div class="metric-label">Online now</div><div class="metric-value" style="color:#388E3C">3 <span>/ 6</span></div></div>
+      <div class="metric-card"><div class="metric-label">Tasks active</div><div class="metric-value">11 <span>open</span></div></div>
+      <div class="metric-card"><div class="metric-label">Completed today</div><div class="metric-value">4</div></div>
+    </div>
+
+    <div class="legend-row">
+      <div class="legend-item"><div class="status-dot status-online"></div> Online</div>
+      <div class="legend-item"><div class="status-dot status-idle"></div> Idle</div>
+      <div class="legend-item"><div class="status-dot status-offline"></div> Offline</div>
+    </div>
+
+    <div class="section-label">Interns</div>
+    <div class="interns-grid">
+      <div class="intern-card" onclick="openModal('Priya Sharma','ia-blue','PS','2 tasks')">
+        <div class="intern-card-top">
+          <div class="intern-avatar ia-blue">PS</div>
+          <div><div class="intern-name">Priya Sharma</div><div class="intern-role">Data analytics</div></div>
+        </div>
+        <div class="status-row"><div class="status-dot status-online"></div><span class="status-label sl-online">Online</span></div>
+        <div class="task-mini"><span>2 tasks</span><span class="task-pill pill-inprog">In progress</span></div>
+      </div>
+      <div class="intern-card" onclick="openModal('Marcus Lee','ia-teal','ML','3 tasks')">
+        <div class="intern-card-top">
+          <div class="intern-avatar ia-teal">ML</div>
+          <div><div class="intern-name">Marcus Lee</div><div class="intern-role">Backend dev</div></div>
+        </div>
+        <div class="status-row"><div class="status-dot status-online"></div><span class="status-label sl-online">Online</span></div>
+        <div class="task-mini"><span>3 tasks</span><span class="task-pill pill-pending">Pending</span></div>
+      </div>
+      <div class="intern-card" onclick="openModal('Aiko Tanaka','ia-purple','AT','1 task')">
+        <div class="intern-card-top">
+          <div class="intern-avatar ia-purple">AT</div>
+          <div><div class="intern-name">Aiko Tanaka</div><div class="intern-role">UI design</div></div>
+        </div>
+        <div class="status-row"><div class="status-dot status-idle"></div><span class="status-label sl-idle">Idle</span></div>
+        <div class="task-mini"><span>1 task</span><span class="task-pill pill-pending">Pending</span></div>
+      </div>
+      <div class="intern-card" onclick="openModal('Omar Diallo','ia-coral','OD','2 tasks')">
+        <div class="intern-card-top">
+          <div class="intern-avatar ia-coral">OD</div>
+          <div><div class="intern-name">Omar Diallo</div><div class="intern-role">Content writing</div></div>
+        </div>
+        <div class="status-row"><div class="status-dot status-offline"></div><span class="status-label sl-offline">Offline</span></div>
+        <div class="task-mini"><span>2 tasks</span><span class="task-pill pill-done">Done</span></div>
+      </div>
+      <div class="intern-card" onclick="openModal('Sofia Reyes','ia-amber','SR','2 tasks')">
+        <div class="intern-card-top">
+          <div class="intern-avatar ia-amber">SR</div>
+          <div><div class="intern-name">Sofia Reyes</div><div class="intern-role">Research</div></div>
+        </div>
+        <div class="status-row"><div class="status-dot status-online"></div><span class="status-label sl-online">Online</span></div>
+        <div class="task-mini"><span>2 tasks</span><span class="task-pill pill-inprog">In progress</span></div>
+      </div>
+      <div class="intern-card" onclick="openModal('Devon Park','ia-pink','DP','1 task')">
+        <div class="intern-card-top">
+          <div class="intern-avatar ia-pink">DP</div>
+          <div><div class="intern-name">Devon Park</div><div class="intern-role">Marketing</div></div>
+        </div>
+        <div class="status-row"><div class="status-dot status-offline"></div><span class="status-label sl-offline">Offline</span></div>
+        <div class="task-mini"><span>1 task</span><span class="task-pill pill-pending">Pending</span></div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-label" style="margin:0">Recent activity</div>
+    </div>
+    <div class="activity-list">
+      <div class="activity-item"><div class="activity-dot status-online"></div><div><div class="activity-text">Priya submitted a progress update for <b>Q2 Report</b></div><div class="activity-time">2 min ago</div></div></div>
+      <div class="activity-item"><div class="activity-dot" style="background:var(--color-background-info);border:1px solid var(--color-text-info)"></div><div><div class="activity-text">Marcus came online</div><div class="activity-time">11 min ago</div></div></div>
+      <div class="activity-item"><div class="activity-dot status-idle"></div><div><div class="activity-text">Aiko went idle</div><div class="activity-time">18 min ago</div></div></div>
+      <div class="activity-item"><div class="activity-dot" style="background:#388E3C"></div><div><div class="activity-text">Task <b>Landing page copy</b> marked complete</div><div class="activity-time">32 min ago</div></div></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="admin-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="intern-avatar ia-blue" id="modal-av" style="width:34px;height:34px;font-size:12px">PS</div>
+          <div>
+            <div class="modal-title" id="modal-name">Priya Sharma</div>
+            <div style="font-size:12px;color:var(--color-text-secondary)" id="modal-tasks">2 tasks</div>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-row">
+          <div class="tab active" onclick="switchTab(this,'tasks-tab')">Tasks</div>
+          <div class="tab" onclick="switchTab(this,'assign-tab')">Assign task</div>
+        </div>
+        <div id="tasks-tab">
+          <div class="task-row">
+            <div class="task-row-top">
+              <div class="task-row-title">
+                <input type="checkbox" onchange="markDone(this)"> Q2 analytics report
+              </div>
+              <span class="task-pill pill-inprog">In progress</span>
+            </div>
+            <div class="task-row-desc">Compile the Q2 data into a summary report with visualizations.</div>
+            <div class="task-actions">
+              <button class="btn-demand" onclick="showDemand('Q2 analytics report')">Demand update</button>
+              <span style="font-size:11px;color:var(--color-text-secondary)">Due: Apr 18</span>
+            </div>
+          </div>
+          <div class="task-row">
+            <div class="task-row-top">
+              <div class="task-row-title">
+                <input type="checkbox" onchange="markDone(this)"> Dashboard wireframes
+              </div>
+              <span class="task-pill pill-pending">Pending</span>
+            </div>
+            <div class="task-row-desc">Create low-fidelity wireframes for the new admin dashboard.</div>
+            <div class="task-actions">
+              <button class="btn-demand" onclick="showDemand('Dashboard wireframes')">Demand update</button>
+              <span style="font-size:11px;color:var(--color-text-secondary)">Due: Apr 20</span>
+            </div>
+          </div>
+        </div>
+        <div id="assign-tab" style="display:none">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div class="update-label">Task title</div>
+              <input type="text" placeholder="Enter task title" style="width:100%;padding:8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)">
+            </div>
+            <div>
+              <div class="update-label">Description</div>
+              <textarea rows="3" placeholder="Describe the task…"></textarea>
+            </div>
+            <div>
+              <div class="update-label">Due date</div>
+              <input type="date" style="width:100%;padding:8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)">
+            </div>
+            <button class="btn-primary" onclick="closeModal()">Assign task</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERN SCREEN -->
+<div id="screen-intern" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">WFH Tracker</div>
+      <div class="topbar-sub">Intern dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div id="intern-status-dot" class="status-dot status-online" style="width:10px;height:10px"></div>
+      <span style="font-size:12px;color:var(--color-text-secondary)" id="intern-status-text">Online</span>
+      <span class="badge badge-intern">Intern</span>
+      <div class="avatar av-intern">PS</div>
+    </div>
+  </div>
+  <div class="page-body">
+    <div id="demand-alert" class="alert-banner" style="display:none">
+      <div class="alert-icon">⚠</div>
+      <div class="alert-text"><b>Update requested</b> — your admin is asking for a progress update on <b id="demand-task-name">Q2 analytics report</b>.</div>
+    </div>
+
+    <div class="metrics-row" style="grid-template-columns:repeat(3,1fr)">
+      <div class="metric-card"><div class="metric-label">My tasks</div><div class="metric-value">2</div></div>
+      <div class="metric-card"><div class="metric-label">Completed</div><div class="metric-value" style="color:#388E3C">1</div></div>
+      <div class="metric-card"><div class="metric-label">Updates sent</div><div class="metric-value">3 <span>today</span></div></div>
+    </div>
+
+    <div class="section-label">My tasks</div>
+    <div class="intern-tasks">
+      <div class="task-card" id="task-q2">
+        <div class="task-card-header">
+          <div class="task-card-title">Q2 analytics report</div>
+          <span class="task-pill pill-inprog" id="pill-q2">In progress</span>
+        </div>
+        <div class="task-card-desc">Compile the Q2 data into a summary report with visualizations.</div>
+        <div class="update-form" id="form-q2" style="display:none">
+          <div class="update-label">Progress update</div>
+          <textarea rows="2" placeholder="Describe your progress…" id="text-q2"></textarea>
+          <div class="upload-row">
+            <button class="upload-btn" onclick="fakeUpload()">+ Attach screenshot</button>
+            <span style="font-size:12px;color:var(--color-text-secondary)" id="upload-status-q2"></span>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="submitUpdate('q2')">Send update</button>
+            <button class="btn-sm" onclick="toggleForm('form-q2')">Cancel</button>
+          </div>
+        </div>
+        <div class="task-card-footer">
+          <span style="font-size:12px;color:var(--color-text-secondary)">Due Apr 18</span>
+          <button class="btn-demand" onclick="toggleForm('form-q2')">Send update</button>
+        </div>
+      </div>
+
+      <div class="task-card" id="task-wire">
+        <div class="task-card-header">
+          <div class="task-card-title">Dashboard wireframes</div>
+          <span class="task-pill pill-pending" id="pill-wire">Pending</span>
+        </div>
+        <div class="task-card-desc">Create low-fidelity wireframes for the new admin dashboard.</div>
+        <div class="update-form" id="form-wire" style="display:none">
+          <div class="update-label">Progress update</div>
+          <textarea rows="2" placeholder="Describe your progress…"></textarea>
+          <div class="upload-row">
+            <button class="upload-btn">+ Attach screenshot</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="toggleForm('form-wire')">Send update</button>
+            <button class="btn-sm" onclick="toggleForm('form-wire')">Cancel</button>
+          </div>
+        </div>
+        <div class="task-card-footer">
+          <span style="font-size:12px;color:var(--color-text-secondary)">Due Apr 20</span>
+          <button class="btn-demand" onclick="toggleForm('form-wire')">Send update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Demand toast -->
+<div class="demand-toast" id="demand-toast">
+  <div class="toast-title">⚡ Update demanded</div>
+  <div class="toast-body" id="toast-body">Boss is asking about <b></b> — you'll see an alert on intern's dashboard.</div>
+</div>
+
+</div>
+
+<script>
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + s).classList.add('active');
+  event.target.classList.add('active');
+  closeModal();
+}
+
+function openModal(name, avClass, initials, tasks) {
+  document.getElementById('modal-name').textContent = name;
+  document.getElementById('modal-av').className = 'intern-avatar ' + avClass;
+  document.getElementById('modal-av').style.cssText = 'width:34px;height:34px;font-size:12px';
+  document.getElementById('modal-av').textContent = initials;
+  document.getElementById('modal-tasks').textContent = tasks;
+  document.getElementById('admin-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('admin-modal').classList.remove('open');
+}
+
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tasks-tab').style.display = tabId === 'tasks-tab' ? 'block' : 'none';
+  document.getElementById('assign-tab').style.display = tabId === 'assign-tab' ? 'block' : 'none';
+}
+
+function markDone(cb) {
+  const row = cb.closest('.task-row');
+  const pill = row.querySelector('.task-pill');
+  if (cb.checked) {
+    pill.className = 'task-pill pill-done';
+    pill.textContent = 'Done';
+    row.style.opacity = '0.6';
+  } else {
+    pill.className = 'task-pill pill-pending';
+    pill.textContent = 'Pending';
+    row.style.opacity = '1';
+  }
+}
+
+function showDemand(taskName) {
+  const toast = document.getElementById('demand-toast');
+  document.getElementById('toast-body').innerHTML = 'Alert sent to intern about <b>' + taskName + '</b>.';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function toggleForm(id) {
+  const f = document.getElementById(id);
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+function fakeUpload() {
+  document.getElementById('upload-status-q2').textContent = 'screenshot.png attached';
+}
+
+function submitUpdate(id) {
+  document.getElementById('form-' + id).style.display = 'none';
+  const pill = document.getElementById('pill-' + id);
+  pill.className = 'task-pill pill-inprog';
+  pill.textContent = 'Updated';
+  document.getElementById('demand-alert').style.display = 'none';
+}
+
+document.getElementById('admin-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
