@@ -496,121 +496,291 @@ Namespace BarangaySystem.Forms.Modules
         Private ReadOnly _resRepo  As New DataAccess.ResidentRepository()
         Private ReadOnly _logRepo  As New DataAccess.EventLogRepository()
 
-        Private _cmbResident   As ComboBox
-        Private _cmbCertType   As ComboBox
-        Private _txtPurpose    As TextBox
-        Private _txtIssuedBy   As TextBox
-        Private _dtpIssuedDate As DateTimePicker
-        Private _txtOrNumber   As TextBox
-        Private _nudAmount     As NumericUpDown
-        Private _residents     As List(Of Models.ResidentModel)
+        Private _txtResidentSearch As TextBox
+        Private _lstResidents      As ListBox
+        Private _cmbCertType       As ComboBox
+        Private _txtPurpose        As TextBox
+        Private _txtIssuedBy       As TextBox
+        Private _dtpIssuedDate     As DateTimePicker
+        Private _txtOrNumber       As TextBox
+        Private _nudAmount         As NumericUpDown
+        Private _lblSelectedRes    As Label
+
+        Private _allResidents      As List(Of Models.ResidentModel)
+        Private _selectedResident  As Models.ResidentModel = Nothing
 
         Public Sub New()
             Me.Text            = "Issue Certificate"
-            Me.Size            = New Size(480, 520)
+            Me.Size            = New Size(500, 620)
+            Me.MinimumSize     = New Size(500, 620)
             Me.StartPosition   = FormStartPosition.CenterParent
             Me.FormBorderStyle = FormBorderStyle.FixedDialog
             Me.MaximizeBox     = False
             Me.MinimizeBox     = False
-            Me.BackColor       = Helpers.UIHelper.Surface
+            Me.BackColor       = Color.White
 
+            ' ── Header ───────────────────────────────────────────────────
             Dim pnlHeader As New Panel With {
-                .Dock = DockStyle.Top, .Height = 44, .BackColor = Helpers.UIHelper.TitleBar
+                .Dock      = DockStyle.Top,
+                .Height    = 44,
+                .BackColor = Helpers.UIHelper.TitleBar
             }
             Dim lblTitle As New Label With {
-                .Text = "Issue Certificate", .Font = New Font("Segoe UI", 11, FontStyle.Bold),
-                .ForeColor = Color.White, .AutoSize = True, .Location = New Point(14, 10)
+                .Text      = "Issue Certificate",
+                .Font      = New Font("Segoe UI", 11, FontStyle.Bold),
+                .ForeColor = Color.White,
+                .AutoSize  = True,
+                .Location  = New Point(14, 10)
             }
             pnlHeader.Controls.Add(lblTitle)
 
-            Dim pnlBody As New Panel With {
-                .Dock = DockStyle.Fill, .AutoScroll = True,
-                .Padding = New Padding(16, 12, 16, 8), .BackColor = Color.White
+            ' ── Footer ───────────────────────────────────────────────────
+            Dim pnlFooter As New Panel With {
+                .Dock      = DockStyle.Bottom,
+                .Height    = 50,
+                .BackColor = Helpers.UIHelper.Surface
             }
-
-            Dim y = 0
-            ' ── Resident ─────────────────────────────────────────────────
-            pnlBody.Controls.Add(New Label With {.Text = "Resident *", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
-            y += 18
-            _cmbResident = New ComboBox With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(420, 26), .Location = New Point(0, y), .DropDownStyle = ComboBoxStyle.DropDownList}
-            pnlBody.Controls.Add(_cmbResident)
-            y += 36
-
-            pnlBody.Controls.Add(New Label With {.Text = "Certificate Type *", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
-            y += 18
-            _cmbCertType = New ComboBox With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(300, 26), .Location = New Point(0, y), .DropDownStyle = ComboBoxStyle.DropDownList}
-            _cmbCertType.Items.AddRange(New String() {"Barangay Clearance", "Certificate of Residency", "Indigency Certificate", "Business Clearance", "Good Moral"})
-            _cmbCertType.SelectedIndex = 0
-            pnlBody.Controls.Add(_cmbCertType)
-            y += 32
-
-            pnlBody.Controls.Add(New Label With {.Text = "Purpose", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
-            y += 18
-            _txtPurpose = New TextBox With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(420, 26), .Location = New Point(0, y), .BorderStyle = BorderStyle.FixedSingle}
-            pnlBody.Controls.Add(_txtPurpose)
-            y += 32
-
-            pnlBody.Controls.Add(New Label With {.Text = "Issued By", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
-            y += 18
-            _txtIssuedBy = New TextBox With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(200, 26), .Location = New Point(0, y), .BorderStyle = BorderStyle.FixedSingle}
-            pnlBody.Controls.Add(_txtIssuedBy)
-            y += 32
-
-            pnlBody.Controls.Add(New Label With {.Text = "Date Issued *", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
-            pnlBody.Controls.Add(New Label With {.Text = "OR Number", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(210, y)})
-            y += 18
-            _dtpIssuedDate = New DateTimePicker With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(190, 26), .Location = New Point(0, y), .Format = DateTimePickerFormat.Short}
-            pnlBody.Controls.Add(_dtpIssuedDate)
-            _txtOrNumber = New TextBox With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(190, 26), .Location = New Point(210, y), .BorderStyle = BorderStyle.FixedSingle}
-            pnlBody.Controls.Add(_txtOrNumber)
-            y += 32
-
-            pnlBody.Controls.Add(New Label With {.Text = "Amount (Php)", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
-            y += 18
-            _nudAmount = New NumericUpDown With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(150, 26), .Location = New Point(0, y), .Minimum = 0, .Maximum = 99999, .DecimalPlaces = 2}
-            pnlBody.Controls.Add(_nudAmount)
-
-            Dim pnlFooter As New Panel With {.Dock = DockStyle.Bottom, .Height = 46, .BackColor = Helpers.UIHelper.Surface}
-            Dim btnSave As New Button With {.Text = "Save", .Font = New Font("Segoe UI", 9, FontStyle.Bold), .BackColor = Helpers.UIHelper.BtnAdd, .ForeColor = Color.White, .FlatStyle = FlatStyle.Flat, .Size = New Size(90, 30), .Location = New Point(270, 8), .Cursor = Cursors.Hand}
+            AddHandler pnlFooter.Paint, Sub(s, e)
+                e.Graphics.DrawLine(New Pen(Helpers.UIHelper.BorderColor), 0, 0, pnlFooter.Width, 0)
+            End Sub
+            Dim btnSave As New Button With {
+                .Text      = "Save",
+                .Font      = New Font("Segoe UI", 9, FontStyle.Bold),
+                .BackColor = Helpers.UIHelper.BtnAdd,
+                .ForeColor = Color.White,
+                .FlatStyle = FlatStyle.Flat,
+                .Size      = New Size(100, 32),
+                .Cursor    = Cursors.Hand
+            }
             btnSave.FlatAppearance.BorderSize = 0
             AddHandler btnSave.Click, AddressOf BtnSave_Click
-            Dim btnCancel As New Button With {.Text = "Cancel", .Font = New Font("Segoe UI", 9), .BackColor = Helpers.UIHelper.BtnPrint, .ForeColor = Color.White, .FlatStyle = FlatStyle.Flat, .Size = New Size(90, 30), .Location = New Point(368, 8), .Cursor = Cursors.Hand}
+            Dim btnCancel As New Button With {
+                .Text      = "Cancel",
+                .Font      = New Font("Segoe UI", 9),
+                .BackColor = Helpers.UIHelper.BtnPrint,
+                .ForeColor = Color.White,
+                .FlatStyle = FlatStyle.Flat,
+                .Size      = New Size(100, 32),
+                .Cursor    = Cursors.Hand
+            }
             btnCancel.FlatAppearance.BorderSize = 0
             AddHandler btnCancel.Click, Sub(s, e) Me.DialogResult = DialogResult.Cancel
+            AddHandler pnlFooter.Resize, Sub(s, e)
+                btnCancel.Location = New Point(pnlFooter.Width - 112, 9)
+                btnSave.Location   = New Point(pnlFooter.Width - 220, 9)
+            End Sub
             pnlFooter.Controls.AddRange({btnSave, btnCancel})
 
-            Me.Controls.AddRange({pnlHeader, pnlBody, pnlFooter})
+            ' ── Body — TableLayoutPanel for reliable layout ───────────────
+            Dim tbl As New TableLayoutPanel With {
+                .Dock        = DockStyle.Fill,
+                .ColumnCount = 2,
+                .RowCount    = 10,
+                .BackColor   = Color.White,
+                .Padding     = New Padding(16, 12, 16, 8),
+                .AutoScroll  = True
+            }
+            tbl.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 50))
+            tbl.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 50))
+            For i = 0 To 9
+                tbl.RowStyles.Add(New RowStyle(SizeType.AutoSize))
+            Next
+
+            Dim row = 0
+
+            ' ── Row 0: Resident label ─────────────────────────────────────
+            Dim lblRes As New Label With {
+                .Text      = "Resident *",
+                .Font      = New Font("Segoe UI", 8.5F, FontStyle.Bold),
+                .ForeColor = Helpers.UIHelper.NavBg,
+                .AutoSize  = True,
+                .Margin    = New Padding(0, 0, 0, 2)
+            }
+            tbl.Controls.Add(lblRes, 0, row)
+            tbl.SetColumnSpan(lblRes, 2)
+            row += 1
+
+            ' ── Row 1: Search box ─────────────────────────────────────────
+            _txtResidentSearch = New TextBox With {
+                .Font        = New Font("Segoe UI", 9.5F),
+                .BorderStyle = BorderStyle.FixedSingle,
+                .Dock        = DockStyle.Fill,
+                .PlaceholderText = "🔍  Type to search resident...",
+                .Margin      = New Padding(0, 0, 0, 2)
+            }
+            AddHandler _txtResidentSearch.TextChanged, AddressOf TxtSearch_TextChanged
+            tbl.Controls.Add(_txtResidentSearch, 0, row)
+            tbl.SetColumnSpan(_txtResidentSearch, 2)
+            row += 1
+
+            ' ── Row 2: Resident list ──────────────────────────────────────
+            _lstResidents = New ListBox With {
+                .Font         = New Font("Segoe UI", 9.5F),
+                .Height       = 110,
+                .Dock         = DockStyle.Fill,
+                .BorderStyle  = BorderStyle.FixedSingle,
+                .SelectionMode = SelectionMode.One,
+                .Margin       = New Padding(0, 0, 0, 4)
+            }
+            AddHandler _lstResidents.SelectedIndexChanged, AddressOf LstResidents_SelectedIndexChanged
+            tbl.Controls.Add(_lstResidents, 0, row)
+            tbl.SetColumnSpan(_lstResidents, 2)
+            row += 1
+
+            ' ── Row 3: Selected resident badge ───────────────────────────
+            _lblSelectedRes = New Label With {
+                .Text      = "No resident selected",
+                .Font      = New Font("Segoe UI", 8.5F, FontStyle.Italic),
+                .ForeColor = Helpers.UIHelper.MutedColor,
+                .AutoSize  = True,
+                .Margin    = New Padding(0, 0, 0, 8)
+            }
+            tbl.Controls.Add(_lblSelectedRes, 0, row)
+            tbl.SetColumnSpan(_lblSelectedRes, 2)
+            row += 1
+
+            ' ── Row 4: Certificate Type ───────────────────────────────────
+            tbl.Controls.Add(MakeLbl("Certificate Type *"), 0, row)
+            tbl.SetColumnSpan(tbl.GetControlFromPosition(0, row), 2)
+            row += 1
+            _cmbCertType = New ComboBox With {
+                .Font          = New Font("Segoe UI", 9.5F),
+                .Dock          = DockStyle.Fill,
+                .DropDownStyle = ComboBoxStyle.DropDownList,
+                .Margin        = New Padding(0, 0, 0, 8)
+            }
+            _cmbCertType.Items.AddRange({"Barangay Clearance", "Certificate of Residency",
+                                         "Indigency Certificate", "Business Clearance", "Good Moral"})
+            _cmbCertType.SelectedIndex = 0
+            tbl.Controls.Add(_cmbCertType, 0, row)
+            tbl.SetColumnSpan(_cmbCertType, 2)
+            row += 1
+
+            ' ── Row 6: Purpose ───────────────────────────────────────────
+            tbl.Controls.Add(MakeLbl("Purpose"), 0, row)
+            tbl.SetColumnSpan(tbl.GetControlFromPosition(0, row), 2)
+            row += 1
+            _txtPurpose = New TextBox With {
+                .Font        = New Font("Segoe UI", 9.5F),
+                .Dock        = DockStyle.Fill,
+                .BorderStyle = BorderStyle.FixedSingle,
+                .Margin      = New Padding(0, 0, 0, 8)
+            }
+            tbl.Controls.Add(_txtPurpose, 0, row)
+            tbl.SetColumnSpan(_txtPurpose, 2)
+            row += 1
+
+            ' ── Row 8: Issued By ─────────────────────────────────────────
+            tbl.Controls.Add(MakeLbl("Issued By"), 0, row)
+            row += 1
+            _txtIssuedBy = New TextBox With {
+                .Font        = New Font("Segoe UI", 9.5F),
+                .Dock        = DockStyle.Fill,
+                .BorderStyle = BorderStyle.FixedSingle,
+                .Margin      = New Padding(0, 0, 8, 8)
+            }
+            tbl.Controls.Add(_txtIssuedBy, 0, row)
+
+            ' OR Number on same row, right column
+            tbl.Controls.Add(MakeLbl("OR Number"), 1, row - 1)
+            _txtOrNumber = New TextBox With {
+                .Font        = New Font("Segoe UI", 9.5F),
+                .Dock        = DockStyle.Fill,
+                .BorderStyle = BorderStyle.FixedSingle,
+                .Margin      = New Padding(0, 0, 0, 8)
+            }
+            tbl.Controls.Add(_txtOrNumber, 1, row)
+            row += 1
+
+            ' ── Row 10: Date Issued | Amount ─────────────────────────────
+            tbl.Controls.Add(MakeLbl("Date Issued *"), 0, row)
+            tbl.Controls.Add(MakeLbl("Amount (Php)"), 1, row)
+            row += 1
+            _dtpIssuedDate = New DateTimePicker With {
+                .Font   = New Font("Segoe UI", 9.5F),
+                .Dock   = DockStyle.Fill,
+                .Format = DateTimePickerFormat.Short,
+                .Margin = New Padding(0, 0, 8, 8)
+            }
+            tbl.Controls.Add(_dtpIssuedDate, 0, row)
+            _nudAmount = New NumericUpDown With {
+                .Font         = New Font("Segoe UI", 9.5F),
+                .Dock         = DockStyle.Fill,
+                .Minimum      = 0,
+                .Maximum      = 99999,
+                .DecimalPlaces = 2,
+                .Margin       = New Padding(0, 0, 0, 8)
+            }
+            tbl.Controls.Add(_nudAmount, 1, row)
+
+            Me.Controls.AddRange({pnlHeader, tbl, pnlFooter})
             Me.AcceptButton = btnSave
             Me.CancelButton = btnCancel
 
             LoadResidents()
-            ' Ensure scroll position starts at the top so Resident field is visible
-            pnlBody.AutoScrollPosition = New Point(0, 0)
         End Sub
+
+        Private Function MakeLbl(text As String) As Label
+            Return New Label With {
+                .Text      = text,
+                .Font      = New Font("Segoe UI", 8.5F),
+                .ForeColor = Helpers.UIHelper.MutedColor,
+                .AutoSize  = True,
+                .Margin    = New Padding(0, 4, 0, 2)
+            }
+        End Function
 
         Private Sub LoadResidents()
             Try
-                _residents = _resRepo.GetAll()
-                _cmbResident.Items.Add("-- Select Resident --")
-                For Each res In _residents
-                    _cmbResident.Items.Add(res.FullName)
-                Next
-                _cmbResident.SelectedIndex = 0
+                _allResidents = _resRepo.GetAll()
+                PopulateList("")
             Catch
-                _residents = New List(Of Models.ResidentModel)()
+                _allResidents = New List(Of Models.ResidentModel)()
             End Try
         End Sub
 
+        Private Sub PopulateList(filter As String)
+            _lstResidents.Items.Clear()
+            Dim filtered = If(String.IsNullOrWhiteSpace(filter),
+                              _allResidents,
+                              _allResidents.Where(Function(r)
+                                  Return r.FullName.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 OrElse
+                                         r.ResCode.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                              End Function).ToList())
+            For Each res In filtered
+                _lstResidents.Items.Add($"{res.FullName}  [{res.ResCode}]")
+            Next
+            ' Keep tag list in sync
+            _lstResidents.Tag = filtered
+        End Sub
+
+        Private Sub TxtSearch_TextChanged(sender As Object, e As EventArgs)
+            PopulateList(_txtResidentSearch.Text.Trim())
+            _selectedResident = Nothing
+            _lblSelectedRes.Text      = "No resident selected"
+            _lblSelectedRes.ForeColor = Helpers.UIHelper.MutedColor
+        End Sub
+
+        Private Sub LstResidents_SelectedIndexChanged(sender As Object, e As EventArgs)
+            If _lstResidents.SelectedIndex < 0 Then Return
+            Dim filtered = TryCast(_lstResidents.Tag, List(Of Models.ResidentModel))
+            If filtered Is Nothing OrElse _lstResidents.SelectedIndex >= filtered.Count Then Return
+            _selectedResident             = filtered(_lstResidents.SelectedIndex)
+            _lblSelectedRes.Text          = $"✔  Selected: {_selectedResident.FullName}  ({_selectedResident.ResCode})"
+            _lblSelectedRes.ForeColor     = Helpers.UIHelper.BadgeActiveFg
+        End Sub
+
         Private Sub BtnSave_Click(sender As Object, e As EventArgs)
-            If _cmbResident.SelectedIndex <= 0 Then
-                MessageBox.Show("Please select a resident.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            If _selectedResident Is Nothing Then
+                MessageBox.Show("Please select a resident from the list.", "Validation Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                _txtResidentSearch.Focus()
                 Return
             End If
-            Dim resident = _residents(_cmbResident.SelectedIndex - 1)
             Dim certType = If(_cmbCertType.SelectedItem IsNot Nothing, _cmbCertType.SelectedItem.ToString(), "")
             Dim model As New Models.CertificateModel With {
                 .CertCode   = _certRepo.NextCertCode(),
-                .ResidentId = resident.ResidentId,
+                .ResidentId = _selectedResident.ResidentId,
                 .CertType   = certType,
                 .Purpose    = _txtPurpose.Text.Trim(),
                 .IssuedBy   = _txtIssuedBy.Text.Trim(),
@@ -621,7 +791,7 @@ Namespace BarangaySystem.Forms.Modules
             }
             Try
                 If _certRepo.Insert(model) Then
-                    _logRepo.Log("INSERT", "Residents", "Issued " & certType & " to " & resident.FullName)
+                    _logRepo.Log("INSERT", "Residents", "Issued " & certType & " to " & _selectedResident.FullName)
                     Me.DialogResult = DialogResult.OK
                 Else
                     MessageBox.Show("Failed to issue certificate.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
