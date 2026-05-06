@@ -511,10 +511,10 @@ Namespace BarangaySystem.Forms.Modules
 
         Public Sub New()
             Me.Text            = "Issue Certificate"
-            Me.Size            = New Size(500, 620)
-            Me.MinimumSize     = New Size(500, 620)
+            Me.Size            = New Size(520, 700)
+            Me.MinimumSize     = New Size(520, 600)
             Me.StartPosition   = FormStartPosition.CenterParent
-            Me.FormBorderStyle = FormBorderStyle.FixedDialog
+            Me.FormBorderStyle = FormBorderStyle.Sizable
             Me.MaximizeBox     = False
             Me.MinimizeBox     = False
             Me.BackColor       = Color.White
@@ -577,7 +577,7 @@ Namespace BarangaySystem.Forms.Modules
                 .ColumnCount = 2,
                 .RowCount    = 10,
                 .BackColor   = Color.White,
-                .Padding     = New Padding(16, 12, 16, 8),
+                .Padding     = New Padding(16, 16, 16, 8),
                 .AutoScroll  = True
             }
             tbl.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 50))
