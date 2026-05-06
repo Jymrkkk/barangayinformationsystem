@@ -442,22 +442,28 @@ Namespace BarangaySystem.Forms
 
         ' ── Role-based toolbar permissions ───────────────────────────────
         Public Sub ApplyRolePermissions()
-            Dim role = If(Session.CurrentUser IsNot Nothing, Session.CurrentUser.Role, "Viewer")
+            Dim role      = If(Session.CurrentUser IsNot Nothing, Session.CurrentUser.Role, "Viewer")
             Dim canWrite  = (role = "Admin" OrElse role = "Encoder")
             Dim canDelete = (role = "Admin")
 
-            btnAdd.Enabled    = canWrite  AndAlso _currentKey <> "home" AndAlso _currentKey <> "eventlogs"
-            btnUpdate.Enabled = canWrite  AndAlso _currentKey <> "home" AndAlso _currentKey <> "eventlogs"
-            btnDelete.Enabled = canDelete AndAlso _currentKey <> "home" AndAlso _currentKey <> "eventlogs"
+            ' Modules where Add/Update/Delete make no sense — hide them entirely
+            Dim hideEditBtns = (_currentKey = "home" OrElse
+                                _currentKey = "eventlogs" OrElse
+                                _currentKey = "reports")
+
+            btnAdd.Visible    = Not hideEditBtns
+            btnUpdate.Visible = Not hideEditBtns
+            btnDelete.Visible = Not hideEditBtns
+
+            ' For modules that show the buttons, apply role-based enable/disable
+            If Not hideEditBtns Then
+                btnAdd.Enabled    = canWrite
+                btnUpdate.Enabled = canWrite
+                btnDelete.Enabled = canDelete
+            End If
+
             btnPrint.Enabled  = True
             btnExport.Enabled = True
-
-            ' Reports module — no Add/Update/Delete
-            If _currentKey = "reports" Then
-                btnAdd.Enabled    = False
-                btnUpdate.Enabled = False
-                btnDelete.Enabled = False
-            End If
         End Sub
 
         ' ── Toolbar button factory ────────────────────────────────────────
