@@ -20,7 +20,7 @@ Namespace BarangaySystem.Forms.Dialogs
         Private _cmbStatus       As ComboBox
 
         Public Sub New(activity As ActivityModel, mode As DialogMode)
-            MyBase.New("Activity", mode, 620, 780)
+            MyBase.New("Activity", mode, 620, 560)
             _activity = activity
             BuildForm()
             If activity IsNot Nothing Then PopulateFields()

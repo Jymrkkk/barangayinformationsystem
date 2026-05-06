@@ -27,7 +27,7 @@ Namespace BarangaySystem.Forms.Dialogs
         Private _schools       As List(Of SchoolModel)
 
         Public Sub New(student As StudentModel, mode As DialogMode)
-            MyBase.New("Student", mode, 660, 820)
+            MyBase.New("Student", mode, 660, 580)
             _student = student
             LoadSchools()
             BuildForm()

@@ -511,8 +511,8 @@ Namespace BarangaySystem.Forms.Modules
 
         Public Sub New()
             Me.Text            = "Issue Certificate"
-            Me.Size            = New Size(520, 700)
-            Me.MinimumSize     = New Size(520, 600)
+            Me.Size            = New Size(520, 570)
+            Me.MinimumSize     = New Size(520, 620)
             Me.StartPosition   = FormStartPosition.CenterParent
             Me.FormBorderStyle = FormBorderStyle.Sizable
             Me.MaximizeBox     = False
@@ -537,7 +537,7 @@ Namespace BarangaySystem.Forms.Modules
             ' ── Footer ───────────────────────────────────────────────────
             Dim pnlFooter As New Panel With {
                 .Dock      = DockStyle.Bottom,
-                .Height    = 50,
+                .Height    = 44,
                 .BackColor = Helpers.UIHelper.Surface
             }
             AddHandler pnlFooter.Paint, Sub(s, e)
@@ -577,7 +577,7 @@ Namespace BarangaySystem.Forms.Modules
                 .ColumnCount = 2,
                 .RowCount    = 10,
                 .BackColor   = Color.White,
-                .Padding     = New Padding(16, 16, 16, 8),
+                .Padding     = New Padding(16, 50, 16, -10),
                 .AutoScroll  = True
             }
             tbl.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 50))

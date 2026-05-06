@@ -35,7 +35,7 @@ Namespace BarangaySystem.Forms.Dialogs
         Private _certBytes      As Byte() = Nothing   ' in-memory buffer
 
         Public Sub New(resident As ResidentModel, mode As DialogMode)
-            MyBase.New("Resident", mode, 660, 860)
+            MyBase.New("Resident", mode, 660, 720)
             _resident = resident
             BuildForm()
             If resident IsNot Nothing Then PopulateFields()

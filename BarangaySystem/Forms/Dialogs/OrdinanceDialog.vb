@@ -20,7 +20,7 @@ Namespace BarangaySystem.Forms.Dialogs
         Private _cmbStatus       As ComboBox
 
         Public Sub New(ordinance As OrdinanceModel, mode As DialogMode)
-            MyBase.New("Ordinance", mode, 640, 780)
+            MyBase.New("Ordinance", mode, 640, 580)
             _ordinance = ordinance
             BuildForm()
             If ordinance IsNot Nothing Then PopulateFields()

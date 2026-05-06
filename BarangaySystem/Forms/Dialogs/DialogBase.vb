@@ -22,8 +22,8 @@ Namespace BarangaySystem.Forms.Dialogs
 
         ' All field builders place controls relative to these offsets
         Protected Const PX  As Integer = 20   ' left margin inside body
-        Protected Const PY  As Integer = 40   ' top margin — first label starts here (40px clears the header shadow)
-        Protected Const ROW As Integer = 42   ' vertical step per field row (label + input + gap)
+        Protected Const PY  As Integer = 65  ' top margin — first label starts here
+        Protected Const ROW As Integer = 38   ' vertical step per field row (label + input + gap)
 
         Private Shared Function ModeLabel(m As DialogMode) As String
             Select Case m
@@ -36,7 +36,7 @@ Namespace BarangaySystem.Forms.Dialogs
 
         Public Sub New(title As String, mode As DialogMode,
                        Optional width As Integer = 620,
-                       Optional height As Integer = 640)
+                       Optional height As Integer = 580)
             Me.Mode            = mode
             Dim lbl            = ModeLabel(mode)
             Me.Text            = $"{lbl} {title}"
