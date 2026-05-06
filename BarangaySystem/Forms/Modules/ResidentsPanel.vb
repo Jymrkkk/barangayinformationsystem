@@ -507,7 +507,7 @@ Namespace BarangaySystem.Forms.Modules
 
         Public Sub New()
             Me.Text            = "Issue Certificate"
-            Me.Size            = New Size(480, 460)
+            Me.Size            = New Size(480, 520)
             Me.StartPosition   = FormStartPosition.CenterParent
             Me.FormBorderStyle = FormBorderStyle.FixedDialog
             Me.MaximizeBox     = False
@@ -529,11 +529,12 @@ Namespace BarangaySystem.Forms.Modules
             }
 
             Dim y = 0
+            ' ── Resident ─────────────────────────────────────────────────
             pnlBody.Controls.Add(New Label With {.Text = "Resident *", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
             y += 18
             _cmbResident = New ComboBox With {.Font = New Font("Segoe UI", 9.5F), .Size = New Size(420, 26), .Location = New Point(0, y), .DropDownStyle = ComboBoxStyle.DropDownList}
             pnlBody.Controls.Add(_cmbResident)
-            y += 32
+            y += 36
 
             pnlBody.Controls.Add(New Label With {.Text = "Certificate Type *", .Font = New Font("Segoe UI", 8.5F), .ForeColor = Helpers.UIHelper.MutedColor, .AutoSize = True, .Location = New Point(0, y)})
             y += 18
@@ -583,6 +584,8 @@ Namespace BarangaySystem.Forms.Modules
             Me.CancelButton = btnCancel
 
             LoadResidents()
+            ' Ensure scroll position starts at the top so Resident field is visible
+            pnlBody.AutoScrollPosition = New Point(0, 0)
         End Sub
 
         Private Sub LoadResidents()
