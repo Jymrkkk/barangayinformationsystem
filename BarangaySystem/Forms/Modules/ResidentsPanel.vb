@@ -713,7 +713,9 @@ Namespace BarangaySystem.Forms.Modules
             }
             tbl.Controls.Add(_nudAmount, 1, row)
 
-            Me.Controls.AddRange({pnlHeader, tbl, pnlFooter})
+            Me.Controls.Add(pnlFooter)
+            Me.Controls.Add(pnlHeader)
+            Me.Controls.Add(tbl)
             Me.AcceptButton = btnSave
             Me.CancelButton = btnCancel
 
